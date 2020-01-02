@@ -3,7 +3,7 @@ const mysqlConfig = {
     user: "root",
     password: 'tianpan1208',
     database: 'test2',
-    host: '127.0.0.1',
+    host: 'localhost',
     port:'3306'
 }
 

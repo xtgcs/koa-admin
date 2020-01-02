@@ -33,26 +33,14 @@ const getBasicInfo = async (ctx) => {
 const getCorpOrgRank = async (ctx) => {
     let sql = `select * from level`;
     let ranks = await query(sql);
-    let obj = {};
-    let sql4 = `select name,id,s_id from department where depth=0`;
-    let res = await query(sql4);
-    obj = res[0];
-    obj.child = [];
-    let sql5 = `select name,id,s_id from department where s_id='${res[0].id}'`;
-    let result = await query(sql5);
-    console.log(result);
-    for (let i = 0; i < result.length; i++) {
-        let sql6 = `select name,id,s_id from department where s_id='${result[i].id}'`;
-        let q = await query(sql6);
-        result[i].child = q; 
-        obj.child.push(result[i]);
-    }    
+    let sql2 = `select name,id,s_id from department`;
+    let departments = await query(sql2);
     ctx.body = {
         code: 0,
         success: true,
         msg: '获取数据',
         data: {
-            departments: [obj],
+            departments: departments,
             ranks: ranks
         }
     }
@@ -95,7 +83,7 @@ const addRank = async (ctx) => {
     }
 }
 // 删除职级
-const deleteRank = async (ctx) => { 
+const deleteRank = async (ctx) => {
     let data = ctx.request.body;
     let sql = `delete from level where id='${data.id}'`;
     let result = await query(sql);
@@ -103,7 +91,7 @@ const deleteRank = async (ctx) => {
         code: 0,
         success: true,
         msg: '删除成功',
-        data:result.insertId
+        data: result.insertId
     }
 }
 
@@ -120,8 +108,8 @@ const addStaff = async (ctx) => {
     }
 }
 // 编辑员工
-const editorStaff = async (ctx) => { 
-    let { id,name,email,employees_no,phone_number,permissions,depart_id,rank_id} = ctx.request.body;
+const editorStaff = async (ctx) => {
+    let { id, name, email, employees_no, phone_number, permissions, depart_id, rank_id } = ctx.request.body;
     let sql = `update  employees set name= '${name}' , email= '${email}',employees_no='${employees_no}',phone_number='${phone_number}',permissions='${permissions}',depart_id='${depart_id}',rank_id='${rank_id}' where id='${id}'`;
     let updateResult = query(sql);
     ctx.body = {
@@ -131,45 +119,62 @@ const editorStaff = async (ctx) => {
         data: updateResult.insertId
     }
 }
-//获取员工信息
+//获取员工信息以及部门信息
 const staffInfo = async (ctx) => {
-    let { id, name, depart_id, rank_id,phone_number } = ctx.request.body;
+    console.log(ctx,778);
+    let { id, name, depart_id, rank_id, phone_number } = ctx.request.body;
     let sql = `select e.id,e.name,e.phone_number,e.employees_no, e.permissions, e.email, e.depart_id,e.rank_id,d.name as depart_ment,r.name as rank_name from employees e,department d,level r where e.depart_id=d.id and e.rank_id=r.id`;
     let arr = [];
-    if(name){
+    if (name) {
         name = `${name}`;
         sql += " and e.name = ?";
         arr.push(name);
     }
-    if(phone_number){
+    if (phone_number) {
         phone_number = `${phone_number}`;
         sql += " and e.phone_number = ?";
         arr.push(phone_number);
     }
-    if(id){
+    if (id) {
         id = `${id}`;
         sql += " and e.id = ?";
         arr.push(id);
     }
-    if(depart_id){
+    if (depart_id) {
         depart_id = `${depart_id}`;
         sql += " and e.depart_id = ?";
         arr.push(depart_id);
     }
-    if(rank_id){
+    if (rank_id) {
         rank_id = `${rank_id}`;
         sql += " and e.rank_id = ?";
         arr.push(rank_id);
     }
     // sql += " limit ?,?";
     // arr.push((current-1)*num,parseInt(num));
+
     let employees = await query(sql, arr);
+
     ctx.body = {
         code: 0,
         success: true,
         msg: '获取成功',
         data: {
-            employees:employees
+            employees: employees
+        }
+    }
+}
+//获取员工信息
+const getEmployees = async (ctx) => {
+    let { id } = ctx.request.query;
+    let sql = `select * from employees where depart_id='${id}'`
+    let employees = await query(sql);
+    ctx.body = {
+        code: 0,
+        success: true,
+        msg: '获取成功',
+        data: {
+            employees: employees
         }
     }
 }
@@ -189,9 +194,9 @@ const addDepartment = async (ctx) => {
 }
 
 // 获取部门列表
-const getDepartments = async (ctx) => { 
+const getDepartments = async (ctx) => {
     let sql = `select * from department`;
-    let result = await query(sql);    
+    let result = await query(sql);
     ctx.body = {
         code: 0,
         success: true,
@@ -203,7 +208,7 @@ const getDepartments = async (ctx) => {
 }
 
 // 获取职级列表
-const getRanks = async (ctx) => { 
+const getRanks = async (ctx) => {
     let sql = `select * from level`;
     let result = await query(sql);
     ctx.body = {
@@ -217,10 +222,10 @@ const getRanks = async (ctx) => {
 }
 
 //获取组织架构数据
-const getOrganization = async (ctx) => {    
+const getOrganization = async (ctx) => {
     let obj = {};
     let sql4 = `select name,id,s_id from department where depth=0`;
-    let res = await query(sql4);    
+    let res = await query(sql4);
     obj.name = res[0].name;
     obj.id = res[0].id;
     obj.s_id = res[0].s_id;
@@ -228,7 +233,7 @@ const getOrganization = async (ctx) => {
     let sql5 = `select name,id,s_id from department where s_id='${res[0].id}'`;
     let result = await query(sql5);
     let children = [];
-    for (let i = 0; i < result.length;i++) { 
+    for (let i = 0; i < result.length; i++) {
         let depart = {};
         depart.name = result[i].name;
         depart.id = result[i].id;
@@ -237,10 +242,10 @@ const getOrganization = async (ctx) => {
         let em = await query(sql);
         let sql6 = `select name,id,s_id from department where s_id='${result[i].id}'`;
         let q = await query(sql6);
-        for (let i = 0; i < q.length; i++) { 
+        for (let i = 0; i < q.length; i++) {
             let sql = `select name,id, depart_id as s_id from employees where depart_id='${q[i].id}'`;
             let e = await query(sql);
-            q[i].children=e;
+            q[i].children = e;
             em.push(q[i]);
         }
         depart.children = em;
@@ -269,5 +274,6 @@ module.exports = {
     getDepartments,
     getRanks,
     editorStaff,
-    getOrganization
+    getOrganization,
+    getEmployees
 }

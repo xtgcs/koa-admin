@@ -4,7 +4,6 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (ctx) => { 
     let email = ctx.request.body.email;
     let html = ctx.request.body.html;
-    console.log(email); 
 const transporter = nodemailer.createTransport({
     service: 'qq',
     auth: {
@@ -36,6 +35,48 @@ const transporter = nodemailer.createTransport({
     // })
 }
   
+const getTickets = async (ctx) => { 
+    ctx.body = {
+        code: 0,
+        data: {
+            list:[
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                },
+                {
+                    name: '海南航空',
+                    price:750
+                }
+            ]
+        }
+    }
+}
 module.exports = {
-    sendEmail
+    sendEmail,
+    getTickets
 }
